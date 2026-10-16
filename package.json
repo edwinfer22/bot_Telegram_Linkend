@@ -1,0 +1,6 @@
+{
+  "name": "linkedin-job-bot",
+  "version": "1.0.0",
+  "description": "Bot de alertas de empleo de LinkedIn para Telegram",
+  "type": "commonjs"
+}

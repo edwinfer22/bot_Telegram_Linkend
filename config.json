@@ -1,0 +1,42 @@
+{
+  "telegram": {
+    "bot_token": "8688726643:AAFCs34sW7c-p6Xv3iHAS_Akim8b904MgPY",
+    "chat_id": "8523938998"
+  },
+  "search": {
+    "keywords": [
+      "Desarrollador Junior",
+      "Junior Developer",
+      "Desarrollador Python",
+      "Desarrollador Full Stack",
+      "QA Tester",
+      "Analista QA",
+      "Ingeniero de Soporte",
+      "Analista de Sistemas"
+    ],
+    "exclude_keywords": [
+      "Senior",
+      "Sr",
+      "Lead",
+      "Principal",
+      "Gerente",
+      "Director",
+      "Architect",
+      "Tech Lead",
+      "Inglés Avanzado",
+      "Advanced English",
+      "Fluent English",
+      "C1",
+      "C2",
+      "100% Bilingüe"
+    ],
+    "locations": [
+      "Bogota, Colombia",
+      "Colombia",
+      "Latin America"
+    ],
+    "time_filter": "r86400",
+    "check_interval_minutes": 30,
+    "max_results_per_query": 20
+  }
+}

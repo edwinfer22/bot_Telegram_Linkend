@@ -1,0 +1,25 @@
+name: LinkedIn Job Alert Bot
+
+on:
+  schedule:
+    # Se ejecuta todos los días a las 10:00 AM hora de Colombia (15:00 UTC)
+    # y opcionalmente a las 3:00 PM hora de Colombia (20:00 UTC)
+    - cron: '0 15 * * *'
+    - cron: '0 20 * * 1-5'
+  workflow_dispatch: # Permite ejecutarlo manualmente desde GitHub cuando quieras
+
+jobs:
+  buscar-empleos:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Descargar el código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Ejecutar escáner de vacantes
+        run: node escanear_ahora.cjs
