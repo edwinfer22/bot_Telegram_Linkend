@@ -1,7 +1,7 @@
 {
   "telegram": {
-    "bot_token": "8688726643:AAFCs34sW7c-p6Xv3iHAS_Akim8b904MgPY",
-    "chat_id": "8523938998"
+    "bot_token": "ENV_VARIABLE_OR_TOKEN_AQUI",
+    "chat_id": "ENV_VARIABLE_OR_CHAT_ID_AQUI"
   },
   "search": {
     "keywords": [

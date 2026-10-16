@@ -2,10 +2,30 @@
  * Escaneo Matutino / Inmediato de Vacantes Calibrado para Edwin Aldana
  * Perfil: Ingeniero de Sistemas | Desarrollador Junior / QA / Soporte L2-L3
  * Ubicaciones: Bogotá y Remoto (Últimas 24 horas)
+ * Soporta variables de entorno y GitHub Secrets para máxima seguridad.
  */
 
 const fs = require('fs');
 const path = require('path');
+
+// Cargar variables de entorno desde archivo .env local si existe (seguridad)
+function loadEnv() {
+  const envPath = path.join(__dirname, '.env');
+  if (fs.existsSync(envPath)) {
+    const lines = fs.readFileSync(envPath, 'utf-8').split(/\r?\n/);
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith('#')) continue;
+      const idx = trimmed.indexOf('=');
+      if (idx !== -1) {
+        const key = trimmed.slice(0, idx).trim();
+        const val = trimmed.slice(idx + 1).trim();
+        if (!process.env[key]) process.env[key] = val;
+      }
+    }
+  }
+}
+loadEnv();
 
 const CONFIG_PATH = path.join(__dirname, 'config.json');
 const DATA_DIR = path.join(__dirname, 'data');
@@ -66,7 +86,6 @@ function cleanText(text) {
     .trim();
 }
 
-// Filtro inteligente para descartar vacantes Senior / Lead o que exijan inglés avanzado/nativo
 function isJobExcluded(title, excludeList) {
   if (!excludeList || !Array.isArray(excludeList)) return false;
   const lower = title.toLowerCase();
@@ -105,7 +124,7 @@ function parseJobsFromHtml(html, excludeList) {
     const title = titleMatch ? cleanText(titleMatch[1]) : null;
 
     if (!title || isJobExcluded(title, excludeList)) {
-      continue; // Descartar vacantes Senior o vacías
+      continue;
     }
 
     const companyMatch = block.match(/<h4[^>]*class=["'][^"']*base-search-card__subtitle[^"']*["'][^>]*>([\s\S]*?)<\/h4>/i);
@@ -149,8 +168,17 @@ async function main() {
   const config = loadConfig();
   const seenJobs = loadSeenJobs();
 
-  const botToken = config.telegram.bot_token;
-  const chatId = config.telegram.chat_id;
+  // Prioridad 1: Variables de entorno (GitHub Secrets o .env local)
+  // Prioridad 2: Archivo config.json
+  const botToken = process.env.TELEGRAM_BOT_TOKEN || config.telegram?.bot_token;
+  const chatId = process.env.TELEGRAM_CHAT_ID || config.telegram?.chat_id;
+
+  if (!botToken || botToken.includes('AQUI') || !chatId || chatId.includes('AQUI')) {
+    console.error('❌ Error: TELEGRAM_BOT_TOKEN o TELEGRAM_CHAT_ID no configurados.');
+    console.error('💡 Configúralos en tu archivo .env local o en los Secrets de tu repositorio de GitHub.');
+    process.exit(1);
+  }
+
   const { keywords, exclude_keywords, locations, time_filter } = config.search;
 
   console.log('========================================================');
@@ -192,7 +220,7 @@ async function main() {
   }
 
   const finalMsg = newJobsCount > 0
-    ? `✅ <b>Escaneo completado.</b>\nSe encontraron <b>${newJobsCount}</b> ofertas acordes a tu perfil para postularte hoy. ¡A por todas! 🚀`
+    ? `✅ <b>Escaneo completado.</b>\nSe encontraron <b>${newJobsCount}</b> ofertas acordes a tu perfil para postularte hoy. ¡Mucho éxito en tus postulaciones! 🚀`
     : `✅ <b>Escaneo completado.</b>\nNo hay nuevas vacantes adicionales en las últimas 24 horas (las disponibles ya te fueron enviadas). 👍`;
 
   await sendTelegramMessage(botToken, chatId, finalMsg);

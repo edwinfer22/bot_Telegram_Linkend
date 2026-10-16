@@ -1,33 +1,46 @@
 /**
- * Script de prueba para validar que tu Bot de Telegram esté funcionando y configurado correctamente.
+ * Script de prueba de conexión a Telegram con soporte para .env y GitHub Secrets.
  */
 
 const fs = require('fs');
 const path = require('path');
 
+function loadEnv() {
+  const envPath = path.join(__dirname, '.env');
+  if (fs.existsSync(envPath)) {
+    const lines = fs.readFileSync(envPath, 'utf-8').split(/\r?\n/);
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith('#')) continue;
+      const idx = trimmed.indexOf('=');
+      if (idx !== -1) {
+        const key = trimmed.slice(0, idx).trim();
+        const val = trimmed.slice(idx + 1).trim();
+        if (!process.env[key]) process.env[key] = val;
+      }
+    }
+  }
+}
+loadEnv();
+
 const CONFIG_PATH = path.join(__dirname, 'config.json');
 
 async function testTelegram() {
-  if (!fs.existsSync(CONFIG_PATH)) {
-    console.error('❌ No se encontró config.json');
+  const config = fs.existsSync(CONFIG_PATH) ? JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf-8')) : {};
+  const botToken = process.env.TELEGRAM_BOT_TOKEN || config.telegram?.bot_token;
+  const chatId = process.env.TELEGRAM_CHAT_ID || config.telegram?.chat_id;
+
+  if (!botToken || botToken.includes('AQUI')) {
+    console.log('⚠️ Configura TELEGRAM_BOT_TOKEN en tu .env o en config.json');
     return;
   }
 
-  const config = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf-8'));
-  const botToken = config.telegram?.bot_token;
-  const chatId = config.telegram?.chat_id;
-
-  if (!botToken || botToken.includes('TU_BOT_TOKEN')) {
-    console.log('⚠️ Reemplaza "TU_BOT_TOKEN_DE_TELEGRAM_AQUI" con tu token real de @BotFather en config.json');
+  if (!chatId || chatId.includes('AQUI')) {
+    console.log('⚠️ Configura TELEGRAM_CHAT_ID en tu .env o en config.json');
     return;
   }
 
-  if (!chatId || chatId.includes('TU_CHAT_ID')) {
-    console.log('⚠️ Reemplaza "TU_CHAT_ID_AQUI" con tu chat_id numérico en config.json');
-    return;
-  }
-
-  console.log('📡 Verificando conexión con Telegram...');
+  console.log('📡 Verificando conexión segura con Telegram...');
 
   try {
     const res = await fetch(`https://api.telegram.org/bot${botToken}/getMe`);
@@ -41,9 +54,8 @@ async function testTelegram() {
     console.log(`🤖 ¡Bot identificado con éxito!: @${me.result.username} (${me.result.first_name})`);
 
     const msg = [
-      `🎉 <b>¡Conexión exitosa!</b>`,
-      `El bot de alertas de empleo en LinkedIn está vinculado correctamente a tu cuenta.`,
-      `A partir de ahora, cada vez que se detecte una vacante relevante de sistemas, recibirás una alerta con enlace directo aquí.`
+      `🔒 <b>¡Conexión segura validada!</b>`,
+      `Tus credenciales están ahora protegidas mediante Variables de Entorno / Secrets.`
     ].join('\n\n');
 
     const sendRes = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
@@ -58,10 +70,9 @@ async function testTelegram() {
 
     const sendData = await sendRes.json();
     if (sendData.ok) {
-      console.log('✅ ¡Mensaje de prueba enviado con éxito a tu Telegram! Revisa tu aplicación.');
+      console.log('✅ ¡Mensaje de prueba seguro enviado con éxito a tu Telegram!');
     } else {
       console.error(`❌ Error al enviar mensaje: ${sendData.description}`);
-      console.log('💡 Recuerda que debes entrar a Telegram, buscar a tu bot y darle clic a "INICIAR" (o enviar /start) al menos una vez para que pueda enviarte mensajes.');
     }
 
   } catch (err) {
