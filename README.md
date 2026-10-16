@@ -1,104 +1,163 @@
 # 🤖 LinkedIn Job Alert Bot para Telegram
 
-Un sistema automatizado y ligero diseñado para rastrear vacantes de empleo de **Sistemas, Software y Tecnología en LinkedIn** y enviártelas de inmediato a tu **Telegram** (tanto en tu celular como en tu PC) con enlace directo para postularte antes que nadie.
+Sistema automatizado de búsqueda y notificación de vacantes de empleo de **Sistemas, Software, QA Testing y Soporte TI en LinkedIn**, con alertas instantáneas enviadas a **Telegram** y ejecución programada **100% en la Nube mediante GitHub Actions**.
 
 ---
 
-## ⚡ Características Principales
+## 🌟 Características Principales
 
-- **Sin baneos ni login requerido:** Utiliza los endpoints públicos de invitados de LinkedIn, protegiendo al 100% tu cuenta personal.
-- **Sin duplicados:** Registra automáticamente los IDs de las vacantes ya enviadas en `data/seen_jobs.json` para que nunca recibas ofertas repetidas.
-- **Formato enriquecido:** Te envía puesto, empresa, ubicación, antigüedad de la vacante y el botón de postulación directa.
-- **Doble motor disponible:** Puedes ejecutarlo indistintamente con **Node.js** (`bot.js`) o con **Python** (`bot.py`), sin necesidad de instalar librerías pesadas.
-- **Filtros personalizables:** Ajusta palabras clave (Python, React, Fullstack, DevOps, etc.) y ubicaciones (Remoto, Colombia, etc.).
+* **☁️ Ejecución 24/7 en la Nube (Gratis):** Corre en los servidores de GitHub Actions todos los días a las **10:00 AM (hora Colombia)**. No necesitas tener tu computador encendido ni aplicaciones abiertas.
+* **🎯 Filtro Inteligente de Perfil (Junior / Sistemas / QA):** Calibrado para posiciones afines a tu hoja de vida:
+  * *Desarrollo:* Desarrollador Junior, Full Stack, Python.
+  * *Calidad:* QA Tester, Analista QA.
+  * *Infraestructura y Soporte:* Ingeniero de Soporte L2/L3, Analista de Sistemas.
+* **🛡️ Filtro Anti-Senior y Anti-Spam:** Descarta automáticamente puestos con palabras como `Senior`, `Sr`, `Lead`, `Principal`, `Gerente`, `Director` o `Architect`.
+* **🗣️ Adaptado a Nivel de Inglés Medio:** Enfocado en vacantes de Bogotá y Remoto (Colombia / Latam) donde el inglés medio (B1/B2) o español es suficiente, filtrando exigencias estrictas de inglés nativo o C1/C2.
+* **⚡ Sin Duplicados:** Registra el identificador único de cada vacante en un historial para garantizar que **nunca recibas la misma oferta dos veces**.
+* **🔒 Seguro y sin baneos:** Consulta los endpoints públicos de LinkedIn, por lo que **no requiere contraseña ni inicio de sesión en LinkedIn**, protegiendo tu cuenta personal.
 
 ---
 
-## 🚀 Guía Rápida de Configuración (3 Minutos)
+## 📁 Estructura del Proyecto
 
-### Paso 1: Crear tu Bot de Telegram
-1. Abre tu aplicación de **Telegram** en el celular o PC.
-2. Busca al usuario oficial **[@BotFather](https://t.me/BotFather)** (tiene una insignia azul de verificación).
-3. Escribe o selecciona `/start` y luego envía `/newbot`.
-4. Elige un nombre para tu bot (por ejemplo: `Mis Empleos Bot`).
-5. Elige un nombre de usuario que termine en `bot` (por ejemplo: `edwin_empleos_bot`).
-6. BotFather te responderá con tu **Token de la API** (se ve algo como: `7182938491:AAHdxx...`). Cópialo.
+```text
+linkedin-job-bot/
+├── .github/
+│   └── workflows/
+│       └── alerta_empleos.yml     # Flujo automático en la nube (10:00 AM)
+├── data/
+│   └── seen_jobs.json             # Historial de ofertas ya enviadas (antiduplicados)
+├── config.json                    # Configuración de credenciales, roles y filtros
+├── escanear_ahora.cjs             # Script de escaneo único (vacantes últimas 24h)
+├── bot.cjs                        # Script de monitor continuo (revisión cada 30 min)
+├── bot.py                         # Motor alternativo en Python nativo
+├── test_telegram.cjs              # Script de prueba de conexión a Telegram
+├── escanear_ahora.bat             # Lanzador rápido en Windows (1 clic)
+├── programar_a_las_10am.bat       # Programador de tarea automática en Windows
+├── iniciar_bot.bat                # Menú interactivo para Windows
+└── README.md                      # Documentación completa del proyecto
+```
 
-### Paso 2: Obtener tu Chat ID de Telegram
-1. En Telegram, busca el bot **[@userinfobot](https://t.me/userinfobot)** o **[@myidbot](https://t.me/myidbot)**.
-2. Dale a `/start`.
-3. Te devolverá un número llamado `Id` (por ejemplo: `123456789`). Cópialo.
-4. **IMPORTANTE:** Entra a la conversación de tu **propio bot** que creaste en el Paso 1 y dale clic al botón **"INICIAR"** (o envía `/start`). Si no haces esto, Telegram no le permitirá a tu bot enviarte mensajes primero.
+---
 
-### Paso 3: Configurar el archivo `config.json`
-Abre el archivo `config.json` y reemplaza los valores de ejemplo con tus datos:
+## 🚀 Guía de Configuración Paso a Paso
+
+### 1. Crear tu Bot en Telegram
+1. Abre Telegram y busca al bot oficial **[@BotFather](https://t.me/BotFather)**.
+2. Envía `/start` y luego el comando `/newbot`.
+3. Escribe un nombre para tu bot (ejemplo: `Mi Job Alert Bot`).
+4. Escribe un nombre de usuario terminado en `bot` (ejemplo: `mi_joblink_bot`).
+5. BotFather te responderá con tu **API Token** (ejemplo: `8688726643:AAFCs34s...`). Guárdalo.
+
+### 2. Obtener tu Chat ID Personal
+1. En Telegram busca a **[@userinfobot](https://t.me/userinfobot)** y envíale `/start`.
+2. Te responderá con tu información; copia el número que aparece en **`Id:`** (ejemplo: `8523938998`).
+3. **Paso fundamental:** Abre la conversación con **tu propio bot recién creado** y dale clic al botón **"INICIAR"** (o envíale `/start`). Esto es obligatorio para que Telegram le permita enviarte mensajes a tu cuenta.
+
+### 3. Configurar el archivo `config.json`
+Edita el archivo `config.json` con tus datos y preferencias:
 
 ```json
 {
   "telegram": {
-    "bot_token": "TU_TOKEN_DE_BOTFATHER_AQUI",
-    "chat_id": "TU_CHAT_ID_NUMERICO_AQUI"
+    "bot_token": "TU_BOT_TOKEN_DE_TELEGRAM",
+    "chat_id": "TU_CHAT_ID_NUMERICO"
   },
   "search": {
     "keywords": [
-      "Desarrollador de Software",
-      "Ingeniero de Sistemas",
-      "Backend Developer",
-      "Frontend Developer",
-      "Full Stack Developer",
-      "Python Developer"
+      "Desarrollador Junior",
+      "Junior Developer",
+      "Desarrollador Python",
+      "Desarrollador Full Stack",
+      "QA Tester",
+      "Analista QA",
+      "Ingeniero de Soporte",
+      "Analista de Sistemas"
+    ],
+    "exclude_keywords": [
+      "Senior",
+      "Sr",
+      "Lead",
+      "Principal",
+      "Gerente",
+      "Director",
+      "Architect",
+      "Tech Lead",
+      "Inglés Avanzado",
+      "Advanced English",
+      "Fluent English",
+      "C1",
+      "C2",
+      "100% Bilingüe"
     ],
     "locations": [
+      "Bogota, Colombia",
       "Colombia",
-      "Remote"
+      "Latin America"
     ],
     "time_filter": "r86400",
-    "check_interval_minutes": 30
+    "check_interval_minutes": 30,
+    "max_results_per_query": 20
   }
 }
 ```
 
 ---
 
-## 💻 Formas de Ejecución
+## ☁️ Automatización en la Nube con GitHub Actions
 
-### Opción A (La más fácil): Usar el lanzador
-Haz doble clic sobre el archivo:
-```text
-iniciar_bot.bat
-```
-Te abrirá un menú para:
-1. Probar tu conexión con Telegram.
-2. Iniciar el bot en Node.js.
-3. Iniciar el bot en Python.
+El proyecto incluye el archivo `.github/workflows/alerta_empleos.yml` que corre en la nube de GitHub sin requerir servidores propios ni pagos:
 
-### Opción B: Por línea de comandos
+* **Horarios automáticos programados:**
+  * **10:00 AM (Hora Colombia / 15:00 UTC):** Momento de mayor publicación de vacantes en LinkedIn.
+  * **3:00 PM (Hora Colombia / 20:00 UTC):** Revisión de la tarde (Lunes a Viernes).
 
-**Para probar tu bot primero:**
-```bash
-node test_telegram.js
-```
+### ¿Cómo disparar un escaneo manual en la nube desde el celular o PC?
+1. Ingresa a tu repositorio en GitHub.
+2. Ve a la pestaña **Actions**.
+3. Selecciona el flujo **`LinkedIn Job Alert Bot`**.
+4. Haz clic en **`Run workflow`** -> **`Run workflow`**.
+5. En 30 segundos te llegará el resumen directo a tu Telegram.
 
-**Para iniciar el rastreador continuo:**
-```bash
-# Con Node.js:
-node bot.js
+---
 
-# O con Python:
-python bot.py
+## 💻 Ejecución Local en tu Computador
+
+Si deseas probar o ejecutar el programa desde tu equipo físico:
+
+### Forma 1: Mediante archivos ejecutables (.bat)
+* **`escanear_ahora.bat`**: Realiza un escaneo inmediato de las ofertas de hoy y te las manda a Telegram.
+* **`iniciar_bot.bat`**: Abre un menú con todas las opciones (probar conexión, modo continuo, Python, editar configuración).
+* **`programar_a_las_10am.bat`**: Configura el Programador de Tareas de Windows para que corra localmente a las 10:00 AM.
+
+### Forma 2: Por consola o terminal
+```powershell
+# Entrar a la carpeta del proyecto
+cd "C:\Users\edwin\.gemini\antigravity-ide\scratch\linkedin-job-bot"
+
+# Probar la conexión con Telegram
+node test_telegram.cjs
+
+# Escanear las ofertas de hoy una sola vez
+node escanear_ahora.cjs
+
+# Dejar el bot vigilando continuamente (revisa cada 30 minutos)
+node bot.cjs
 ```
 
 ---
 
-## 🕒 Ejecución automática en segundo plano (Windows)
+## ⚙️ Parámetros de Personalización
 
-Si deseas que el programa se ejecute automáticamente sin tener una ventana abierta:
-1. Presiona `Windows + R`, escribe `taskschd.msc` y presiona Enter para abrir el **Programador de Tareas**.
-2. Haz clic en **Crear tarea básica...**.
-3. Ponle de nombre: `LinkedIn Job Bot`.
-4. En desencadenador selecciona **Al iniciar la sesión** o **Diariamente**.
-5. En acción selecciona **Iniciar un programa**:
-   - Programa: `node.exe` (o `python.exe`)
-   - Argumentos: `bot.js` (o `bot.py`)
-   - Iniciar en (directorio): La ruta completa donde está el bot.
-6. ¡Listo! Recibirás ofertas directo en tu bolsillo sin preocuparte por abrir programas.
+| Parámetro | Descripción |
+| :--- | :--- |
+| `keywords` | Lista de cargos y tecnologías a rastrear en LinkedIn. |
+| `exclude_keywords` | Palabras para descartar ofertas (ej. Senior, C1, etc.). |
+| `locations` | Ciudades o regiones objetivo de búsqueda. |
+| `time_filter` | Filtro de tiempo: `r86400` (últimas 24h), `r604800` (última semana). |
+| `check_interval_minutes` | Frecuencia de revisión para el modo continuo local. |
+
+---
+
+## 📄 Licencia y Privacidad
+Este proyecto es de uso personal y educativo. Se recomienda mantener el repositorio en modo **Privado** en GitHub para proteger las credenciales y tokens personales.
